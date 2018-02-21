@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using AzureADB2C.WebApp.Shared;
-
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace AzureADB2C.WebApp
 {
@@ -33,10 +30,11 @@ namespace AzureADB2C.WebApp
             services.AddDistributedMemoryCache();
             services.AddSession(options => 
             {
-                options.IdleTimeOut = TimeSpan.FromHours(1);
-                options.CookieHttpOnly = true;
+                options.IdleTimeout = TimeSpan.FromHours(1);
+                options.Cookie.HttpOnly = true;
             });
-            services.AddAuthentication(sharedOptions=>sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
+            services.AddAuthentication(sharedOptions => sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme).
+                AddCookie();
 
             services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdConnectOptionsSetup>();
         }
@@ -59,11 +57,7 @@ namespace AzureADB2C.WebApp
             app.UseMvc();            
 
             app.UseSession();
-
-            app.UseCookieAuthentication();
-
-            app.UseOpenIdConnectAuthentication();
-
+            
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
